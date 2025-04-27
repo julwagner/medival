@@ -1,0 +1,387 @@
+                                    <!DOCTYPE html>
+                                    <html>
+                                    <head>
+                                        <title>Classification Result</title>
+                                        <style>
+                                            body {
+                                                font-family: Arial, sans-serif;
+                                                padding: 40px;
+                                            }
+
+                                            h1, h2 {
+                                                color: #333;
+                                            }
+
+                                            table {
+                                                border-collapse: collapse;
+                                                width: 80%;
+                                                margin-top: 20px;
+                                            }
+
+                                            th, td {
+                                                border: 1px solid #999;
+                                                padding: 8px 12px;
+                                                vertical-align: top;
+                                            }
+
+                                            th {
+                                                background-color: #f2f2f2;
+                                                text-align: left;
+                                                width: 30%;
+                                            }
+
+                                            .bonus-malus-table {
+                                                border-collapse: collapse;
+                                                width: 100%;
+                                                margin-top: 10px;
+                                                font-size: 14px;
+                                            }
+
+                                            .bonus-malus-table th, .bonus-malus-table td {
+                                                border: 1px solid #ccc;
+                                                padding: 10px;
+                                                text-align: left;
+                                                vertical-align: top;
+                                            }
+
+                                            .bonus-malus-table th {
+                                                background-color: #f5f7fa;
+                                                color: #333;
+                                                font-weight: bold;
+                                            }
+
+                                            .bonus-malus-table tr:nth-child(even) td {
+                                                background-color: #f9f9f9;
+                                            }
+
+                                            .custom-eval-table {
+                                                border-collapse: collapse;
+                                                width: 100%;
+                                                table-layout: fixed;
+                                                margin-top: 30px;
+                                                font-size: 14px;
+                                            }
+
+                                            .custom-eval-table th, .custom-eval-table td {
+                                                padding: 12px;
+                                                text-align: center;
+                                                vertical-align: top;
+                                            }
+
+                                            .custom-eval-table th {
+                                                font-weight: bold;
+                                                background-color: #f5f7fa;
+                                            }
+
+                                            .custom-eval-table td .cell-box {
+                                                background-color: #e0e0e0;
+                                                border-radius: 10px;
+                                                padding: 10px;
+                                                min-height: 60px;
+                                                box-sizing: border-box;
+                                            }
+
+                                            .custom-eval-table .row-title {
+                                                font-weight: bold;
+                                                background-color: #f2f2f2;
+                                            }
+
+                                            .score-form {
+                                                display: flex;
+                                                background-color: #d3d3d3;
+                                                padding: 20px;
+                                                gap: 10px;
+                                                justify-content: center;
+                                                font-family: Arial, sans-serif;
+                                                font-size: 24px;
+                                            }
+                                            .score-box {
+                                                flex: 1;
+                                                border: 1px solid black;
+                                                padding: 20px;
+                                                text-align: center;
+                                                background-color: #d3d3d3;
+                                            }
+                                            .highlight {
+                                                background-color: yellow;
+                                                font-weight: bold;
+                                                padding: 10px;
+                                                border-radius: 10px;
+                                            }
+                                            .score-form-wrapper {
+                                                width: 100%;
+                                                overflow-x: auto;
+                                                margin-bottom: 40px; /* Some space after the form */
+                                            }
+                                        </style>
+                                    </head>
+                                    <body>
+                                        <h1>🧾 Evaluationsresultat</h1>
+
+                                        <table class="highlight-table">
+                                            <tbody>
+                                                {% set meta_lines = result.metadata.split('\n') %}
+                                                {% for line in meta_lines %}
+                                                    {% if 'Title of Study:' in line or 'Title of Journal:' in line %}
+                                                        <tr>
+                                                            <th>{{ line.split(':')[0].replace("**", "").strip() }}</th>
+                                                            <td>{{ line.split(':', 1)[1].replace("**", "").strip() }}</td>
+                                                        </tr>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+
+                                        <h2>📊 Studieninformation</h2>
+                                        <table>
+                                            <tbody>
+                                                {% for line in meta_lines %}
+                                                    {% if ':' in line and 'Title of Study:' not in line and 'Title of Journal:' not in line %}
+                                                        <tr>
+                                                            <th>{{ line.split(':')[0].replace("**", "").strip() }}</th>
+                                                            <td>{{ line.split(':', 1)[1].replace("**", "").strip() }}</td>
+                                                        </tr>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+
+                                        <h2>📋 Studienrating </h2>
+                                        <table class="custom-eval-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Vorgehen der Evaluation</th>
+                                                    <th>Regel</th>
+                                                    <th>Empfehlung</th>
+                                                    <th>Exzerpt</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td class="row-title">Indikation</td>
+                                                    <td><div class="cell-box">Oncological or non-oncological</div></td>
+                                                    <td>
+                                                        <div class="cell-box">
+                                                            {% if result.classification == 0 %}
+                                                                Study is oncological
+                                                            {% elif result.classification == 1 %}
+                                                                Study is non-oncological
+                                                            {% else %}
+                                                                Not classified
+                                                            {% endif %}
+                                                        </div>
+                                                    </td>
+                                                    <td><div class="cell-box">{{ result.explanation }}</div></td>
+                                                </tr>
+
+                                                <tr>
+                                                    <td class="row-title">Studientype</td>
+                                                    <td><div class="cell-box">RCT, Single Arm or Case Reports</div></td>
+                                                    <td>
+                                                        <div class="cell-box">
+                                                            {% if result.classification == 1 and result.study_design is not none %}
+                                                                {% set design_map = {
+                                                                    0: "Randomized Control Trial (RCT)",
+                                                                    1: "Single Arm Study",
+                                                                    2: "Case Report(s)",
+                                                                    3: "Other"
+                                                                } %}
+                                                                {{ design_map[result.study_design] }}
+                                                            {% else %}
+                                                                Nicht verfügbar
+                                                            {% endif %}
+                                                        </div>
+                                                    </td>
+                                                    <td><div class="cell-box">{{ result.study_design_explanation }}</div></td>
+                                                </tr>
+
+                                                <tr>
+                                                    <td class="row-title">Type</td>
+                                                    <td>
+                                                        <div class="cell-box">
+                                                            {% if result.study_design == 0 %}
+                                                               
+                1. Funktionsänderung (Functional Change), 2. Anzahl Ereignisse (Event Count), 
+                                                                3. Scorepoints, 4. Surrogatwerte mit Studienrange (x–y), 
+                                                                5. Ansprechrate eines Ziels im 1° Endpunkt, 6. Mortalität
+                                                            {% elif result.study_design == 1 or result.study_design == 2 or result.study_design == 3 %}
+                                                                -
+                                                            {% else %}
+                                                                Nicht verfügbar
+                                                            {% endif %}
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div class="cell-box">
+                                                            {% if result.study_design == 0 %}
+                                                                {{ result.rct_type }}
+                                                            {% elif result.study_design == 1 or result.study_design == 2 or result.study_design == 3 %}
+                                                                -
+                                                            {% else %}
+                                                                Nicht verfügbar
+                                                            {% endif %}
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div class="cell-box">
+                                                            {% if result.study_design == 0 %}
+                                                                {{ result.rct_type_explanation }}
+                                                            {% elif result.study_design == 1 or result.study_design == 2 or result.study_design == 3 %}
+                                                                -
+                                                            {% else %}
+                                                                Nicht verfügbar
+                                                            {% endif %}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+
+                                                <tr>
+                                                                        <td class="row-title">Klinischer Benefit</td>
+
+                                                                        <!-- Regel column -->
+                                                                        <td>
+                                                                            <div class="cell-box">
+                                                                                {% if result.study_design == 0 %}
+                                                                                    {% if 1 <= result.rct_type <= 4 %}
+                                                                                        If Δ% is reported for the primary endpoint:<br>
+                                                                                        4. Δ% ≥ 50% → study_score = 4<br>
+                                                                                        3. 30% ≤ Δ% < 50% or HR ≤ 0.65 → study_score = 3<br>
+                                                                                        2. 10% ≤ Δ% < 30% or HR ≤ 0.70 → study_score = 2<br>
+                                                                                        1. 5% ≤ Δ% < 10% or HR ≤ 0.75 → study_score = 1
+                                                                                    {% elif result.rct_type == 5 %}
+                                                                                        If Δ% ≥ 40%, then study_score = 4.<br>
+                                                                                        If 20% ≤ Δ% < 40%, then study_score = 3.<br>
+                                                                                        If 10% ≤ Δ% < 20%, then study_score = 2.<br>
+                                                                                        If 5% ≤ Δ% < 10%, then study_score = 1.
+                                                                                    {% elif result.rct_type == 6 %}
+                                                                                        If ΔOS ≥ 2% per year, then study_score = 4.<br>
+                                                                                        If 2% ≥ ΔOS ≥ 1% per year OR HR ≤ 0.80, then study_score = 3.<br>
+                                                                                        If 1% ≥ ΔOS ≥ 0.5% per year OR HR ≤ 0.85, then study_score = 2.<br>
+                                                                                        If ΔOS < 0.5% per year OR HR > 0.85, then study_score = 1.
+                                                                                    {% else %}
+                                                                                        Nicht verfügbar
+                                                                                    {% endif %}
+                                                                                {% elif result.study_design == 1 %}
+                                                                                    1) Is the Ansprechen (Response Rate) > 60% <strong>and</strong> Duration of Response (DoR) > 6 Monate?<br>
+                                                                                    2) Is the Ansprechen (Response Rate) ≥ 30%?<br>
+                                                                                    3) Is there no information about response rate?
+                                                                                {% elif result.study_design in [2, 3] %}
+                                                                                    -
+                                                                                {% else %}
+                                                                                    Nicht verfügbar
+                                                                                {% endif %}
+                                                                            </div>
+                                                                        </td>
+
+                                                                        <!-- Empfehlung column -->
+                                                                        <td>
+                                                                            <div class="cell-box">
+                                                                                {% if result.study_design == 0 %}
+                                                                                    {{ result.study_score }}
+                                                                                {% elif result.study_design == 1 %}
+                                                                                    Punkt {{ result.match_score }} ist wahr und führt daher zu einem Scorepunkt von {{ result.study_score }}
+                                                                                {% elif result.study_design in [2, 3] %}
+                                                                                    -
+                                                                                {% else %}
+                                                                                    Nicht verfügbar
+                                                                                {% endif %}
+                                                                            </div>
+                                                                        </td>
+
+                                                                        <!-- Exzerpt column -->
+                                                                        <td>
+                                                                            <div class="cell-box">
+                                                                                {% if result.study_design == 0 %}
+                                                                                    {{ result.study_score_explanation }}
+                                                                                {% elif result.study_design == 1 %}
+                                                                                    {{ result.response_analysis }}
+                                                                                {% elif result.study_design in [2, 3] %}
+                                                                                    -
+                                                                                {% else %}
+                                                                                    Nicht verfügbar
+                                                                                {% endif %}
+                                                                            </div>
+                                                                        </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+
+                                    
+
+                                        {% if result.total_score_cap_single_arm %}
+                                            <h3>📉 Capped Score Notice</h3>
+                                            <p>{{ result.total_score_cap_single_arm }}</p>
+                                        {% endif %}
+
+                                        
+
+                                                                                            {% if result.bonus_malus_table_new %}
+                                                                                            <h2>📊 Bonus-Malus Bewertung</h2>
+                                                                                            <div style="margin-bottom: 20px;">
+                                                                                                {{ result.bonus_malus_table_new | safe }}
+                                                                                            </div>
+                                                                                            <p><strong>Total value of bonus and malus points:</strong> {{ result.bonus_malus_delta }}</p>
+                                                                                            <p><strong>Value of bonus and malus points applied:</strong> {{ result.bonus_malus_delta_real }}</p>
+                                                                                            {% endif %}
+                                                                                            {% if result.score_letter %}
+                                            {% if result.overarching_rules_table %}
+                                        
+                                                                                            <h2>📊 Regeln zur Modellanwendung</h2><div style="margin-bottom: 20px;">
+                                                    {{ result.overarching_rules_table | safe }}
+                                                </div>
+                                                                                
+                                            {% endif %}
+                                            <h2>🏅 Overall Study Rating</h2>
+                                            <p><strong>Total Score:</strong> {{ result.total_score }}</p>
+                                            <p><strong>Rating:</strong> {{ result.score_letter }}</p>
+                                                                                            <div class="score-form-wrapper">
+                                                                                                <div class="score-form">
+                                                                                                    <div class="score-box {% if result.total_score == 5 %}highlight{% endif %}">5 → A</div>
+                                                                                                    <div class="score-box {% if result.total_score == 4 %}highlight{% endif %}">4 → A</div>
+                                                                                                    <div class="score-box {% if result.total_score == 3 %}highlight{% endif %}">3 → B</div>
+                                                                                                    <div class="score-box {% if result.total_score == 2 %}highlight{% endif %}">2 → C</div>
+                                                                                                    <div class="score-box {% if result.total_score == 1 %}highlight{% endif %}">1 → C</div>
+                                                                                                    <div class="score-box {% if result.total_score == 0 %}highlight{% endif %}">0 → D</div>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                            </div>
+                                        {% endif %}
+                                                                                                                                   <div style="display: flex; justify-content: center; align-items: center; margin-top: 40px;">
+                                                                                                                                       <label style="font-size: 16px; display: flex; align-items: center;">
+                                                                                                                                           <input type="checkbox" id="confirm-result" style="transform: scale(1.5); margin-right: 10px;">
+                                                                                                                                           Ich bestätige das Resultat
+                                                                                                                                       </label>
+
+                                                                                                                                       <button style="
+                                                                                                                                           background-color: #4CAF50; 
+                                                                                                                                           color: white; 
+                                                                                                                                           border: none; 
+                                                                                                                                           padding: 12px 24px; 
+                                                                                                                                           font-size: 16px; 
+                                                                                                                                           border-radius: 8px; 
+                                                                                                                                           margin-left: 20px;
+                                                                                                                                           cursor: pointer;
+                                                                                                                                       ">
+                                                                                                                                           ✅ Bestätigen
+                                                                                                                                       </button>
+
+                                                                                                                                       <button style="
+                                                                                                                                           background-color: #ccc; 
+                                                                                                                                           color: black; 
+                                                                                                                                           border: none; 
+                                                                                                                                           padding: 12px 24px; 
+                                                                                                                                           font-size: 16px; 
+                                                                                                                                           border-radius: 8px; 
+                                                                                                                                           cursor: not-allowed;
+                                                                                                                                           margin-left: 20px;
+                                                                                                                                       ">
+                                                                                                                                           📄 Speichern als PDF
+                                                                                                                                       </button>
+                                                                                                                                   </div>
+                                                                                            </div>
+                                        {% if result.flag %}
+                                            <h3>⚠️ Notice</h3>
+                                            <p>{{ result.flag }}</p>
+                                        {% endif %}
+                                    </body>
+                                    </html>
